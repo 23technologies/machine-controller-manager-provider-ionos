@@ -1,0 +1,17 @@
+apiVersion: machine.sapcloud.io/v1alpha1
+kind: MachineClass
+metadata:
+  name: cx11-ubuntu
+  namespace: shoot--foobar--ionos
+providerSpec:
+  datacenterID: "7924c421-2495-43f3-8bd6-3afbafe1d6c8"
+  cluster: "hugo"
+  zone: "de/txl"
+  cores: 1
+  memory: 1024
+  imageID: "57c979d6-f38a-11eb-9799-ca71ec1fa085"
+  sshKey: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIH8TsLUddLMEJwUWWdvcE0vR5gAXLA4Gu6JaeN6EGsLg tobias@loki"
+  networkID: "7924c421-2495-43f3-8bd6-3afbafe1d6c8"
+secretRef: # If required
+  name: ionos-test-secret
+  namespace: shoot--foobar--ionos
