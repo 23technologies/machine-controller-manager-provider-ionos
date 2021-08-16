@@ -1,0 +1,18 @@
+/args
+/bin
+/.kube-secrets
+/tmp/*
+/dev
+/test
+/logs
+
+*.html
+.vscode
+.idea
+*.DS_Store
+*amd64
+main
+
+# Output of the go coverage tool
+*coverprofile.*
+
