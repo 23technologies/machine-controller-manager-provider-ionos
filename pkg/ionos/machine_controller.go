@@ -117,10 +117,10 @@ func (p *MachineProvider) CreateMachine(ctx context.Context, req *driver.CreateM
 
 	var floatingPoolIPLANID string
 
-	if "" != providerSpec.FloatingPoolIPID {
+	if "" != providerSpec.FloatingPoolID {
 		name := fmt.Sprintf("%s-floating-pool-ip", machine.Name)
 
-		floatingPoolIPLANID, err = ensurer.EnsureFloatingPoolIPBlockLANIsCreated(ctx, client, providerSpec.DatacenterID, providerSpec.FloatingPoolIPID, name)
+		floatingPoolIPLANID, err = ensurer.EnsureFloatingPoolIPBlockLANIsCreated(ctx, client, providerSpec.DatacenterID, providerSpec.FloatingPoolID, name)
 		if nil != err {
 			return nil, status.Error(codes.Internal, err.Error())
 		}
@@ -270,7 +270,7 @@ func (p *MachineProvider) DeleteMachine(ctx context.Context, req *driver.DeleteM
 		return nil, status.Error(codes.Unavailable, err.Error())
 	}
 
-	if "" != providerSpec.FloatingPoolIPID {
+	if "" != providerSpec.FloatingPoolID {
 		name := fmt.Sprintf("%s-floating-pool-ip", machine.Name)
 
 		err := ensurer.EnsureFloatingPoolIPBlockLANIsDeleted(ctx, client, providerSpec.DatacenterID, name)

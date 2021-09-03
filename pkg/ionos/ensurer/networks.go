@@ -27,16 +27,35 @@ import (
 	ionossdk "github.com/ionos-cloud/sdk-go/v5"
 )
 
-func EnsureFloatingPoolIPBlockLANIsCreated(ctx context.Context, client *ionossdk.APIClient, datacenterID, floatingPoolIPID, lanName string) (string, error) {
-	if "" != floatingPoolIPID {
-		floatingPoolIPBlock, _, err := client.IPBlocksApi.IpblocksFindById(ctx, floatingPoolIPID).Execute()
+func EnsureFloatingPoolIPBlockLANIsCreated(ctx context.Context, client *ionossdk.APIClient, datacenterID, floatingPoolID, lanName string) (string, error) {
+	if "" != floatingPoolID {
+		floatingPoolIPBlock, _, err := client.IPBlocksApi.IpblocksFindById(ctx, floatingPoolID).Execute()
 		if nil != err {
 			return "", err
-		} else if 1 != *floatingPoolIPBlock.Properties.Size {
-			return "", errors.New(fmt.Sprintf("Floating Pool IP Block '%s' given is invalid", floatingPoolIPBlock))
 		}
 
-		floatingPoolIP := (*floatingPoolIPBlock.Properties.Ips)[0]
+		var floatingPoolIP string
+
+		for _, ip := range *floatingPoolIPBlock.Properties.Ips {
+			isIPInUse := false
+
+			for _, ipConsumer := range *floatingPoolIPBlock.Properties.IpConsumers {
+				isIPInUse = ip == *ipConsumer.Ip
+
+				if isIPInUse {
+					break
+				}
+			}
+
+			if !isIPInUse {
+				floatingPoolIP = ip
+			}
+		}
+
+		if "" == floatingPoolIP {
+			return "", errors.New(fmt.Sprintf("Floating Pool IP Block '%s' given is exhausted", floatingPoolIPBlock))
+		}
+
 		public := true
 
 		lanProperties := ionossdk.LanPropertiesPost{

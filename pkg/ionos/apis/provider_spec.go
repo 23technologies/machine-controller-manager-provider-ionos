@@ -27,7 +27,7 @@ type ProviderSpec struct {
 	ImageID          string `json:"imageID"`
 	SSHKey           string `json:"sshKey"`
 
-	FloatingPoolIPID string  `json:"floatingPoolIPID,omitempty"`
+	FloatingPoolID string  `json:"floatingPoolID,omitempty"`
 	NetworkID        string  `json:"networkID,omitempty"`
 	// Default: If you're creating the volume from a snapshot and don't specify
 	// a volume size, the default is the snapshot size.
