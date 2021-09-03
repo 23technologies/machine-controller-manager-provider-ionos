@@ -68,7 +68,6 @@ func (p *MachineProvider) CreateMachine(ctx context.Context, req *driver.CreateM
 	}
 
 	client := apis.GetClientForUser(string(secret.Data["user"]), string(secret.Data["password"]))
-	region := apis.GetRegionFromZone(providerSpec.Zone)
 
 	image, _, err := client.ImageApi.ImagesFindById(ctx, providerSpec.ImageID).Depth(1).Execute()
 	if nil != err {
@@ -173,6 +172,8 @@ func (p *MachineProvider) CreateMachine(ctx context.Context, req *driver.CreateM
 	if nil != err {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
+
+	region := apis.GetRegionFromZone(providerSpec.Zone)
 
 	err = apis.AddLabelToServer(ctx, client, providerSpec.DatacenterID, serverID, "region", hex.EncodeToString([]byte(region)))
 	if nil != err {
