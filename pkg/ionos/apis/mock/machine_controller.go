@@ -68,6 +68,37 @@ const (
 	}
 }
 	`
+	jsonNicTemplate = `{
+		"id": %q,
+		"type": "nic",
+		"href": "",
+		"metadata": {
+			"etag": "45480eb3fbfc31f1d916c1eaa4abdcc3",
+			"createdDate": "2015-12-04T14:34:09.809Z",
+			"createdBy": "user@example.com",
+			"createdByUserId": "user@example.com",
+			"lastModifiedDate": "2015-12-04T14:34:09.809Z",
+			"lastModifiedBy": "user@example.com",
+			"lastModifiedByUserId": "63cef532-26fe-4a64-a4e0-de7c8a506c90",
+			"state": "AVAILABLE"
+		},
+		"properties": {
+			"name": "NIC",
+			"mac": "00:11:22:33:44:55",
+			"ips": [],
+			"dhcp": true,
+			"lan": 2,
+			"firewallActive": false,
+			"firewallType": "INGRESS",
+			"deviceNumber": 1,
+			"pciSlot": 1
+		},
+		"entities": {
+			"flowlogs": {},
+			"firewallrules": {}
+		}
+	}
+	`
 	jsonServerDataTemplate = `
 {
 	"id": %q,
@@ -158,6 +189,7 @@ const (
 	TestNamespace = "test"
 	TestServerNameTemplate = "machine-%s"
 	TestServerID = "6789abcd-ef01-4345-6789-abcdef012325"
+	TestServerNicID = "23456789-abcd-4f01-23e5-6789abcdef01"
 	TestServerVolumeID = "3456789a-bcde-4012-3f56-789abcdef012"
 )
 
@@ -296,7 +328,7 @@ func SetupImagesEndpointOnMux(mux *http.ServeMux) {
 	})
 }
 
-// SetupVolumesEndpointOnMux configures a "/datacenters/<id>/servers" endpoint on the mux given.
+// SetupServersEndpointOnMux configures a "/datacenters/<id>/servers" endpoint on the mux given.
 //
 // PARAMETERS
 // mux *http.ServeMux Mux to add handler to
@@ -358,6 +390,28 @@ func SetupTestServerEndpointOnMux(mux *http.ServeMux) {
 	})
 
 	mux.HandleFunc(fmt.Sprintf("%s/labels", baseURL), handleLabelEndpointRequest)
+
+	mux.HandleFunc(fmt.Sprintf("%s/nics", baseURL), func(res http.ResponseWriter, req *http.Request) {
+		res.Header().Add("Content-Type", "application/json; charset=utf-8")
+
+		if (strings.ToLower(req.Method) == "post") {
+			res.WriteHeader(http.StatusAccepted)
+			res.Write([]byte(fmt.Sprintf(jsonNicTemplate, TestServerNicID)))
+		} else {
+			panic("Unsupported HTTP method call")
+		}
+	})
+
+	mux.HandleFunc(fmt.Sprintf("%s/nics/%s", baseURL, TestServerNicID), func(res http.ResponseWriter, req *http.Request) {
+		res.Header().Add("Content-Type", "application/json; charset=utf-8")
+
+		if (strings.ToLower(req.Method) == "get") {
+			res.WriteHeader(http.StatusOK)
+			res.Write([]byte(fmt.Sprintf(jsonNicTemplate, TestServerNicID)))
+		} else {
+			panic("Unsupported HTTP method call")
+		}
+	})
 
 	mux.HandleFunc(fmt.Sprintf("%s/start", baseURL), func(res http.ResponseWriter, req *http.Request) {
 		res.Header().Add("Content-Type", "application/json; charset=utf-8")

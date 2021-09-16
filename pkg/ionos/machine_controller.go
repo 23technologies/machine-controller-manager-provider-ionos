@@ -78,6 +78,7 @@ func (p *MachineProvider) CreateMachine(ctx context.Context, req *driver.CreateM
 
 	sshKeys := []string{fmt.Sprintf("%s\n", providerSpec.SSHKey)}
 	userDataBase64Enc := base64.StdEncoding.EncodeToString(userDataBytes)
+	volumeName := fmt.Sprintf("%s-root-volume", machine.Name)
 	volumeSize := providerSpec.VolumeSize
 	volumeType := ionosVolumeType
 
@@ -89,7 +90,7 @@ func (p *MachineProvider) CreateMachine(ctx context.Context, req *driver.CreateM
 
 	volumeProperties := ionossdk.VolumeProperties{
 		Type: &volumeType,
-		Name: &machine.Name,
+		Name: &volumeName,
 		Size: &volumeSize,
 		Image: &providerSpec.ImageID,
 		SshKeys: &sshKeys,
@@ -97,8 +98,10 @@ func (p *MachineProvider) CreateMachine(ctx context.Context, req *driver.CreateM
 	}
 
 	volumeApiCreateRequest := client.VolumeApi.DatacentersVolumesPost(ctx, providerSpec.DatacenterID).Depth(0)
-	volume, _, err := volumeApiCreateRequest.Volume(ionossdk.Volume{Properties: &volumeProperties}).Execute()
-	if nil != err {
+	volume, httpResponse, err := volumeApiCreateRequest.Volume(ionossdk.Volume{Properties: &volumeProperties}).Execute()
+	if 404 == httpResponse.StatusCode {
+		return nil, status.Error(codes.Canceled, "datacenterID given is invalid")
+	} else if nil != err {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
@@ -113,17 +116,6 @@ func (p *MachineProvider) CreateMachine(ctx context.Context, req *driver.CreateM
 	err = apis.AddLabelToVolume(ctx, client, providerSpec.DatacenterID, volumeID, "cluster", clusterValue)
 	if nil != err {
 		return nil, status.Error(codes.Internal, err.Error())
-	}
-
-	var floatingPoolIPLANID string
-
-	if "" != providerSpec.FloatingPoolID {
-		name := fmt.Sprintf("%s-floating-pool-ip", machine.Name)
-
-		floatingPoolIPLANID, err = ensurer.EnsureFloatingPoolIPBlockLANIsCreated(ctx, client, providerSpec.DatacenterID, providerSpec.FloatingPoolID, name)
-		if nil != err {
-			return nil, status.Error(codes.Internal, err.Error())
-		}
 	}
 
 	cores := int32(providerSpec.Cores)
@@ -185,15 +177,18 @@ func (p *MachineProvider) CreateMachine(ctx context.Context, req *driver.CreateM
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
-	if "" != floatingPoolIPLANID {
-		err = ensurer.EnsureLANIsAttachedToServer(ctx, client, providerSpec.DatacenterID, serverID, floatingPoolIPLANID)
-		if nil != err {
-			return nil, status.Error(codes.Internal, err.Error())
-		}
+	if "" == providerSpec.FloatingPoolID {
+		err = ensurer.EnsureLANIsAttachedToServer(ctx, client, providerSpec.DatacenterID, serverID, providerSpec.NetworkIDs.WAN)
+	} else {
+		err = ensurer.EnsureLANAndFloatingIPIsAttachedToServer(ctx, client, providerSpec.DatacenterID, serverID, providerSpec.NetworkIDs.WAN, providerSpec.FloatingPoolID)
 	}
 
-	if "" != providerSpec.NetworkID {
-		err = ensurer.EnsureLANIsAttachedToServer(ctx, client, providerSpec.DatacenterID, serverID, providerSpec.NetworkID)
+	if nil != err {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	if "" != providerSpec.NetworkIDs.Workers {
+		err = ensurer.EnsureLANIsAttachedToServer(ctx, client, providerSpec.DatacenterID, serverID, providerSpec.NetworkIDs.Workers)
 		if nil != err {
 			return nil, status.Error(codes.Internal, err.Error())
 		}
@@ -268,15 +263,6 @@ func (p *MachineProvider) DeleteMachine(ctx context.Context, req *driver.DeleteM
 	server, _, err := client.ServerApi.DatacentersServersFindById(ctx, providerSpec.DatacenterID, serverID).Depth(3).Execute()
 	if nil != err {
 		return nil, status.Error(codes.Unavailable, err.Error())
-	}
-
-	if "" != providerSpec.FloatingPoolID {
-		name := fmt.Sprintf("%s-floating-pool-ip", machine.Name)
-
-		err := ensurer.EnsureFloatingPoolIPBlockLANIsDeleted(ctx, client, providerSpec.DatacenterID, name)
-		if nil != err {
-			return nil, status.Error(codes.Unavailable, err.Error())
-		}
 	}
 
 	for _, volume := range *server.Entities.Volumes.Items {

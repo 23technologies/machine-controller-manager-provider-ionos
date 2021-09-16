@@ -27,74 +27,7 @@ import (
 	ionossdk "github.com/ionos-cloud/sdk-go/v5"
 )
 
-func EnsureFloatingPoolIPBlockLANIsCreated(ctx context.Context, client *ionossdk.APIClient, datacenterID, floatingPoolID, lanName string) (string, error) {
-	if "" != floatingPoolID {
-		floatingPoolIPBlock, _, err := client.IPBlocksApi.IpblocksFindById(ctx, floatingPoolID).Execute()
-		if nil != err {
-			return "", err
-		}
-
-		var floatingPoolIP string
-
-		for _, ip := range *floatingPoolIPBlock.Properties.Ips {
-			isIPInUse := false
-
-			for _, ipConsumer := range *floatingPoolIPBlock.Properties.IpConsumers {
-				isIPInUse = ip == *ipConsumer.Ip
-
-				if isIPInUse {
-					break
-				}
-			}
-
-			if !isIPInUse {
-				floatingPoolIP = ip
-			}
-		}
-
-		if "" == floatingPoolIP {
-			return "", errors.New(fmt.Sprintf("Floating Pool IP Block '%s' given is exhausted", floatingPoolIPBlock))
-		}
-
-		public := true
-
-		lanProperties := ionossdk.LanPropertiesPost{
-			Name: &lanName,
-			IpFailover: &[]ionossdk.IPFailover{ionossdk.IPFailover{Ip: &floatingPoolIP}},
-			Public: &public,
-		}
-
-		lanApiCreateRequest := client.LanApi.DatacentersLansPost(ctx, datacenterID).Depth(0)
-		lan, _, err := lanApiCreateRequest.Lan(ionossdk.LanPost{Properties: &lanProperties}).Execute()
-		if nil != err {
-			return "", err
-		}
-
-		return *lan.Id, nil
-	}
-
-	return "", nil
-}
-
-func EnsureFloatingPoolIPBlockLANIsDeleted(ctx context.Context, client *ionossdk.APIClient, datacenterID, lanName string) error {
-	lans, _, err := client.LanApi.DatacentersLansGet(ctx, datacenterID).Depth(1).Execute()
-	if nil != err {
-		return err
-	}
-
-	for _, lan := range *lans.Items {
-		if lanName == *lan.Properties.Name {
-			_, _, err := client.LanApi.DatacentersLansDelete(ctx, datacenterID, *lan.Id).Depth(0).Execute()
-			if nil != err {
-				return err
-			}
-		}
-	}
-
-	return nil
-}
-
-func EnsureLANIsAttachedToServer(ctx context.Context, client *ionossdk.APIClient, datacenterID, id, lanID string) error {
+func attachLANToServer(ctx context.Context, client *ionossdk.APIClient, datacenterID, id, lanID, floatingPoolIP string) error {
 	numericLANID, err := strconv.Atoi(lanID)
 	if nil != err {
 		return err
@@ -104,6 +37,11 @@ func EnsureLANIsAttachedToServer(ctx context.Context, client *ionossdk.APIClient
 
 	nicProperties := ionossdk.NicProperties{
 		Lan: &apiLANID,
+	}
+
+	if "" != floatingPoolIP {
+		ips := []string{floatingPoolIP}
+		nicProperties.Ips = &ips
 	}
 
 	nicApiCreateRequest := client.NicApi.DatacentersServersNicsPost(ctx, datacenterID, id).Depth(0)
@@ -118,4 +56,39 @@ func EnsureLANIsAttachedToServer(ctx context.Context, client *ionossdk.APIClient
 	}
 
 	return nil
+}
+
+func EnsureLANAndFloatingIPIsAttachedToServer(ctx context.Context, client *ionossdk.APIClient, datacenterID, id, lanID, floatingPoolID string) error {
+	floatingPoolIPBlock, _, err := client.IPBlocksApi.IpblocksFindById(ctx, floatingPoolID).Execute()
+	if nil != err {
+		return err
+	}
+
+	var floatingPoolIP string
+
+	for _, ip := range *floatingPoolIPBlock.Properties.Ips {
+		isIPInUse := false
+
+		for _, ipConsumer := range *floatingPoolIPBlock.Properties.IpConsumers {
+			isIPInUse = ip == *ipConsumer.Ip
+
+			if isIPInUse {
+				break
+			}
+		}
+
+		if !isIPInUse {
+			floatingPoolIP = ip
+		}
+	}
+
+	if "" == floatingPoolIP {
+		return errors.New(fmt.Sprintf("Floating Pool IP Block '%s' given is exhausted", floatingPoolID))
+	}
+
+	return attachLANToServer(ctx, client, datacenterID, id, lanID, floatingPoolIP)
+}
+
+func EnsureLANIsAttachedToServer(ctx context.Context, client *ionossdk.APIClient, datacenterID, id, lanID string) error {
+	return attachLANToServer(ctx, client, datacenterID, id, lanID, "")
 }

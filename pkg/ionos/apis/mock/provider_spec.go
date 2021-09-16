@@ -22,10 +22,10 @@ import (
 )
 
 const (
-	TestProviderSpec = "{\"datacenterID\":\"01234567-89ab-4def-0123-c56789abcdef\",\"cluster\":\"xyz\",\"zone\":\"de-fra\",\"cores\":1,\"memory\":1024,\"imageID\":\"15f67991-0f51-4efc-a8ad-ef1fb31a480c\",\"SSHKey\":\"ssh-rsa invalid\"}"
+	TestProviderSpec = "{\"datacenterID\":\"01234567-89ab-4def-0123-c56789abcdef\",\"cluster\":\"xyz\",\"zone\":\"de-fra\",\"cores\":1,\"memory\":1024,\"imageID\":\"15f67991-0f51-4efc-a8ad-ef1fb31a480c\",\"SSHKey\":\"ssh-rsa invalid\",\"NetworkIDs\":{\"wan\":\"1\"}}"
 	TestProviderSpecCluster = "xyz"
 	TestProviderSpecDatacenterID = "01234567-89ab-4def-0123-c56789abcdef"
-	TestProviderSpecNetworkID = "23456789-abcd-4f01-23e5-6789abcdef01"
+	TestProviderSpecNetworkID = "1"
 	TestProviderSpecSSHKey = "ssh-rsa invalid"
 	TestProviderSpecImageID = "15f67991-0f51-4efc-a8ad-ef1fb31a480c"
 	TestProviderSpecZone = "de-fra"
@@ -55,6 +55,8 @@ func NewProviderSpec() *apis.ProviderSpec {
 		Memory: 1024,
 		ImageID: TestProviderSpecImageID,
 		SSHKey: TestProviderSpecSSHKey,
-		NetworkID: TestProviderSpecNetworkID,
+		NetworkIDs: &apis.NetworkIDs{
+			WAN: TestProviderSpecNetworkID,
+		},
 	}
 }

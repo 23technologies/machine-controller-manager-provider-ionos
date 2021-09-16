@@ -54,6 +54,10 @@ func ValidateIonosProviderSpec(spec *apis.ProviderSpec, secrets *corev1.Secret) 
 		allErrs = append(allErrs, fmt.Errorf("sshKey is a required field"))
 	}
 
+	if nil == spec.NetworkIDs || "" == spec.NetworkIDs.WAN {
+		allErrs = append(allErrs, fmt.Errorf("networkIDs.wan is a required field"))
+	}
+
 	//allErrs = append(allErrs, ValidateSecret(secret)...)
 
 	return allErrs

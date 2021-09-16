@@ -27,9 +27,17 @@ type ProviderSpec struct {
 	ImageID          string `json:"imageID"`
 	SSHKey           string `json:"sshKey"`
 
-	FloatingPoolID string  `json:"floatingPoolID,omitempty"`
-	NetworkID        string  `json:"networkID,omitempty"`
+	FloatingPoolID string      `json:"floatingPoolID,omitempty"`
+	NetworkIDs     *NetworkIDs `json:"networkIDs,omitempty"`
 	// Default: If you're creating the volume from a snapshot and don't specify
 	// a volume size, the default is the snapshot size.
-	VolumeSize       float32 `json:"volumeSize,omitempty"`
+	VolumeSize     float32     `json:"volumeSize,omitempty"`
+}
+
+// Networks holds information about the Kubernetes and infrastructure networks.
+type NetworkIDs struct {
+	// WAN is the network ID for the public facing network interface.
+	WAN string `json:"wan"`
+	// Workers is the network ID of a worker subnet.
+	Workers string `json:"workers,omitempty"`
 }

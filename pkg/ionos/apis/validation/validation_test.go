@@ -87,7 +87,9 @@ var _ = Describe("Validation", func() {
 						Memory: 1024,
 						ImageID: mock.TestProviderSpecImageID,
 						SSHKey: mock.TestProviderSpecSSHKey,
-						NetworkID: mock.TestProviderSpecNetworkID,
+						NetworkIDs: &apis.NetworkIDs{
+							WAN: mock.TestProviderSpecNetworkID,
+						},
 					},
 					secret: providerSecret,
 				},
@@ -108,7 +110,9 @@ var _ = Describe("Validation", func() {
 						Memory: 1024,
 						ImageID: mock.TestProviderSpecImageID,
 						SSHKey: mock.TestProviderSpecSSHKey,
-						NetworkID: mock.TestProviderSpecNetworkID,
+						NetworkIDs: &apis.NetworkIDs{
+							WAN: mock.TestProviderSpecNetworkID,
+						},
 					},
 					secret: providerSecret,
 				},
@@ -129,7 +133,9 @@ var _ = Describe("Validation", func() {
 						Memory: 1024,
 						ImageID: mock.TestProviderSpecImageID,
 						SSHKey: mock.TestProviderSpecSSHKey,
-						NetworkID: mock.TestProviderSpecNetworkID,
+						NetworkIDs: &apis.NetworkIDs{
+							WAN: mock.TestProviderSpecNetworkID,
+						},
 					},
 					secret: providerSecret,
 				},
@@ -150,7 +156,9 @@ var _ = Describe("Validation", func() {
 						Cores: 1,
 						Memory: 1024,
 						SSHKey: mock.TestProviderSpecSSHKey,
-						NetworkID: mock.TestProviderSpecNetworkID,
+						NetworkIDs: &apis.NetworkIDs{
+							WAN: mock.TestProviderSpecNetworkID,
+						},
 					},
 					secret: providerSecret,
 				},
@@ -171,7 +179,9 @@ var _ = Describe("Validation", func() {
 						Cores: 1,
 						Memory: 1024,
 						ImageID: mock.TestProviderSpecImageID,
-						NetworkID: mock.TestProviderSpecNetworkID,
+						NetworkIDs: &apis.NetworkIDs{
+							WAN: mock.TestProviderSpecNetworkID,
+						},
 					},
 					secret: providerSecret,
 				},
@@ -197,7 +207,34 @@ var _ = Describe("Validation", func() {
 					secret: providerSecret,
 				},
 				expect: expect{
-					errToHaveOccurred: false,
+					errToHaveOccurred: true,
+					errList: []error{
+						fmt.Errorf("networkIDs.wan is a required field"),
+					},
+				},
+			}),
+			Entry("networkID.wan field missing", &data{
+				setup: setup{},
+				action: action{
+					spec: &apis.ProviderSpec{
+						DatacenterID: mock.TestProviderSpecDatacenterID,
+						Cluster: mock.TestProviderSpecCluster,
+						Zone: mock.TestProviderSpecZone,
+						Cores: 1,
+						Memory: 1024,
+						ImageID: mock.TestProviderSpecImageID,
+						SSHKey: mock.TestProviderSpecSSHKey,
+						NetworkIDs: &apis.NetworkIDs{
+							Workers: mock.TestProviderSpecNetworkID,
+						},
+					},
+					secret: providerSecret,
+				},
+				expect: expect{
+					errToHaveOccurred: true,
+					errList: []error{
+						fmt.Errorf("networkIDs.wan is a required field"),
+					},
 				},
 			}),
 		)
