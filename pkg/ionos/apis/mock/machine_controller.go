@@ -193,6 +193,11 @@ const (
 	TestServerVolumeID = "3456789a-bcde-4012-3f56-789abcdef012"
 )
 
+// handleLabelEndpointRequest provides support for a generic "/labels" endpoint.
+//
+// PARAMETERS
+// req *http.Request       Request instance
+// res http.ResponseWriter Response instance
 func handleLabelEndpointRequest(res http.ResponseWriter, req *http.Request) {
 	res.Header().Add("Content-Type", "application/json; charset=utf-8")
 
@@ -297,7 +302,7 @@ func NewMachineClassWithProviderSpec(providerSpec []byte) *v1alpha1.MachineClass
 // newJsonServerData generates a JSON server data object for testing purposes.
 //
 // PARAMETERS
-// serverID    int    Server ID to use
+// serverID    string Server ID to use
 // serverState string Server state to use
 func newJsonServerData(serverID string, serverState string) string {
 	serverBootState := "RUNNING"
@@ -369,7 +374,7 @@ func SetupServersEndpointOnMux(mux *http.ServeMux) {
 	})
 }
 
-// SetupTestServerEndpointOnMux configures a "/objects/servers/<UUID>" endpoint on the mux given.
+// SetupTestServerEndpointOnMux configures "/datacenters/<dcid>/servers/<sid>/*" endpoints on the mux given.
 //
 // PARAMETERS
 // mux *http.ServeMux Mux to add handler to
@@ -434,7 +439,7 @@ func SetupTestServerEndpointOnMux(mux *http.ServeMux) {
 	})
 }
 
-// SetupTestVolumeEndpointOnMux configures a "/datacenters/<id>/volumes/<id>" endpoint on the mux given.
+// SetupTestVolumeEndpointOnMux configures "/datacenters/<dcid>/volumes/<vid>" endpoints on the mux given.
 //
 // PARAMETERS
 // mux *http.ServeMux Mux to add handler to

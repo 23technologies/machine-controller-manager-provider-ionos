@@ -27,7 +27,16 @@ import (
 	ionossdk "github.com/ionos-cloud/sdk-go/v5"
 )
 
-func attachLANToServer(ctx context.Context, client *ionossdk.APIClient, datacenterID, id, lanID, floatingPoolIP string) error {
+// attachLANToServer attaches the LAN ID given to the server and uses the floating pool IP.
+//
+// PARAMETERS
+// ctx            context.Context     Execution context
+// client         *ionossdk.APIClient IONOS client
+// datacenterID   string              Datacenter ID
+// serverID       string              Server ID
+// lanID          string              LAN ID
+// floatingPoolIP string              Floating pool IP to use
+func attachLANToServer(ctx context.Context, client *ionossdk.APIClient, datacenterID, serverID, lanID, floatingPoolIP string) error {
 	numericLANID, err := strconv.Atoi(lanID)
 	if nil != err {
 		return err
@@ -44,13 +53,13 @@ func attachLANToServer(ctx context.Context, client *ionossdk.APIClient, datacent
 		nicProperties.Ips = &ips
 	}
 
-	nicApiCreateRequest := client.NicApi.DatacentersServersNicsPost(ctx, datacenterID, id).Depth(0)
+	nicApiCreateRequest := client.NicApi.DatacentersServersNicsPost(ctx, datacenterID, serverID).Depth(0)
 	nic, _, err := nicApiCreateRequest.Nic(ionossdk.Nic{Properties: &nicProperties}).Execute()
 	if nil != err {
 		return err
 	}
 
-	err = apis.WaitForNicModifications(ctx, client, datacenterID, id, *nic.Id)
+	err = apis.WaitForNicModifications(ctx, client, datacenterID, serverID, *nic.Id)
 	if nil != err {
 		return err
 	}
@@ -58,7 +67,16 @@ func attachLANToServer(ctx context.Context, client *ionossdk.APIClient, datacent
 	return nil
 }
 
-func EnsureLANAndFloatingIPIsAttachedToServer(ctx context.Context, client *ionossdk.APIClient, datacenterID, id, lanID, floatingPoolID string) error {
+// EnsureLANAndFloatingIPIsAttachedToServer verifies that the LAN ID given is attached to the server and uses a floating pool IP.
+//
+// PARAMETERS
+// ctx            context.Context     Execution context
+// client         *ionossdk.APIClient IONOS client
+// datacenterID   string              Datacenter ID
+// serverID       string              Server ID
+// lanID          string              LAN ID
+// floatingPoolID string              Floating pool ID to select IP from
+func EnsureLANAndFloatingIPIsAttachedToServer(ctx context.Context, client *ionossdk.APIClient, datacenterID, serverID, lanID, floatingPoolID string) error {
 	floatingPoolIPBlock, _, err := client.IPBlocksApi.IpblocksFindById(ctx, floatingPoolID).Execute()
 	if nil != err {
 		return err
@@ -86,9 +104,17 @@ func EnsureLANAndFloatingIPIsAttachedToServer(ctx context.Context, client *ionos
 		return errors.New(fmt.Sprintf("Floating Pool IP Block '%s' given is exhausted", floatingPoolID))
 	}
 
-	return attachLANToServer(ctx, client, datacenterID, id, lanID, floatingPoolIP)
+	return attachLANToServer(ctx, client, datacenterID, serverID, lanID, floatingPoolIP)
 }
 
-func EnsureLANIsAttachedToServer(ctx context.Context, client *ionossdk.APIClient, datacenterID, id, lanID string) error {
-	return attachLANToServer(ctx, client, datacenterID, id, lanID, "")
+// EnsureLANIsAttachedToServer verifies that the LAN ID given is attached to the server.
+//
+// PARAMETERS
+// ctx          context.Context     Execution context
+// client       *ionossdk.APIClient IONOS client
+// datacenterID string              Datacenter ID
+// serverID     string              Server ID
+// lanID        string              LAN ID
+func EnsureLANIsAttachedToServer(ctx context.Context, client *ionossdk.APIClient, datacenterID, serverID, lanID string) error {
+	return attachLANToServer(ctx, client, datacenterID, serverID, lanID, "")
 }

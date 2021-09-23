@@ -19,13 +19,13 @@ package apis
 
 // ProviderSpec is the spec to be used while parsing the calls.
 type ProviderSpec struct {
-	DatacenterID     string `json:"datacenterID,omitempty"`
-	Cluster          string `json:"cluster"`
-	Zone             string `json:"zone"`
-	Cores            uint   `json:"cores"`
-	Memory           uint   `json:"memory"`
-	ImageID          string `json:"imageID"`
-	SSHKey           string `json:"sshKey"`
+	DatacenterID string `json:"datacenterID,omitempty"`
+	Cluster      string `json:"cluster"`
+	Zone         string `json:"zone"`
+	Cores        uint   `json:"cores"`
+	Memory       uint   `json:"memory"`
+	ImageID      string `json:"imageID"`
+	SSHKey       string `json:"sshKey"`
 
 	FloatingPoolID string      `json:"floatingPoolID,omitempty"`
 	NetworkIDs     *NetworkIDs `json:"networkIDs,omitempty"`

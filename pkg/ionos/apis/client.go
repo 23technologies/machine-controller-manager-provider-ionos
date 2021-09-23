@@ -26,7 +26,7 @@ var singletons = make(map[string]*ionossdk.APIClient)
 // GetClientForUser returns an underlying IONOS client for the given user name.
 //
 // PARAMETERS
-// user  string User name to look up client instance for
+// user     string User name to look up client instance for
 // password string Password for the user name. Please note that the password
 //                 will not be replaced if an client is already cached.
 func GetClientForUser(user, password string) *ionossdk.APIClient {

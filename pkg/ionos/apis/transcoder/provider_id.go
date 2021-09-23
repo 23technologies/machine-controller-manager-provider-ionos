@@ -80,7 +80,7 @@ func DecodeDatacenterIDFromProviderID(providerID string) (string, error) {
 	return serverData.DatacenterID, nil
 }
 
-// DecodeServerIDFromProviderID decodes the given ProviderID to extract the server UUID.
+// DecodeServerIDAsStringFromProviderID decodes the given ProviderID to extract the server ID.
 //
 // PARAMETERS
 // providerID string Provider ID to parse

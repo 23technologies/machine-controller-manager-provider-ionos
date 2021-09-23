@@ -182,7 +182,6 @@ var _ = Describe("MachineController", func() {
 		DescribeTable("##table",
 			func(data *data) {
 				ctx := context.Background()
-
 				_, err := provider.DeleteMachine(ctx, data.action.machineRequest)
 
 				if data.expect.errToHaveOccurred {

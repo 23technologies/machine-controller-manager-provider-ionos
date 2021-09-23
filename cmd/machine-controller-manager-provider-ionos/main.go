@@ -26,6 +26,7 @@ import (
 	"github.com/spf13/pflag"
 )
 
+// main is the executable entry point.
 func main() {
 	if err := cmd.RunProviderIonosManager(pflag.CommandLine); err != nil {
 		fmt.Fprintf(os.Stderr, "%v\n", err)

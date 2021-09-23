@@ -28,6 +28,10 @@ import (
 	"k8s.io/component-base/logs"
 )
 
+// RunProviderIonosManager runs the IONOS machine controller server.
+//
+// PARAMETERS
+// args *pflag.FlagSet Command line arguments
 func RunProviderIonosManager(args *pflag.FlagSet) error {
 	s := options.NewMCServer()
 	s.AddFlags(args)
