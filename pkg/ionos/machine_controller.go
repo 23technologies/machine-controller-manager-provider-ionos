@@ -19,7 +19,6 @@ package ionos
 
 import (
 	"context"
-	"encoding/base64"
 	"encoding/hex"
 	"fmt"
 	"math"
@@ -77,7 +76,7 @@ func (p *MachineProvider) CreateMachine(ctx context.Context, req *driver.CreateM
 	}
 
 	sshKeys := []string{fmt.Sprintf("%s\n", providerSpec.SSHKey)}
-	userDataBase64Enc := base64.StdEncoding.EncodeToString(userDataBytes)
+	userData := string(userDataBytes)
 	volumeName := fmt.Sprintf("%s-root-volume", machine.Name)
 	volumeSize := providerSpec.VolumeSize
 	volumeType := ionosVolumeType
@@ -94,7 +93,7 @@ func (p *MachineProvider) CreateMachine(ctx context.Context, req *driver.CreateM
 		Size: &volumeSize,
 		Image: &providerSpec.ImageID,
 		SshKeys: &sshKeys,
-		UserData: &userDataBase64Enc,
+		UserData: &userData,
 	}
 
 	volumeApiCreateRequest := client.VolumeApi.DatacentersVolumesPost(ctx, providerSpec.DatacenterID).Depth(0)
