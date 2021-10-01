@@ -23,9 +23,9 @@ import (
 	"fmt"
 	"math"
 
+	ionosapiwrapper "github.com/23technologies/ionos-api-wrapper/pkg"
 	"github.com/23technologies/machine-controller-manager-provider-ionos/pkg/ionos/apis"
 	"github.com/23technologies/machine-controller-manager-provider-ionos/pkg/ionos/apis/transcoder"
-	"github.com/23technologies/machine-controller-manager-provider-ionos/pkg/ionos/ensurer"
 	"github.com/gardener/machine-controller-manager/pkg/util/provider/driver"
 	"github.com/gardener/machine-controller-manager/pkg/util/provider/machinecodes/codes"
 	"github.com/gardener/machine-controller-manager/pkg/util/provider/machinecodes/status"
@@ -66,7 +66,7 @@ func (p *MachineProvider) CreateMachine(ctx context.Context, req *driver.CreateM
 		return nil, status.Error(codes.Internal, "userData doesn't exist")
 	}
 
-	client := apis.GetClientForUser(string(secret.Data["user"]), string(secret.Data["password"]))
+	client := ionosapiwrapper.GetClientForUser(string(secret.Data["user"]), string(secret.Data["password"]))
 
 	image, _, err := client.ImageApi.ImagesFindById(ctx, providerSpec.ImageID).Depth(1).Execute()
 	if nil != err {
@@ -107,12 +107,12 @@ func (p *MachineProvider) CreateMachine(ctx context.Context, req *driver.CreateM
 	clusterValue := hex.EncodeToString([]byte(providerSpec.Cluster))
 	volumeID := *volume.Id
 
-	volume, err = apis.WaitForVolumeModificationsAndGetResult(ctx, client, providerSpec.DatacenterID, volumeID)
+	volume, err = ionosapiwrapper.WaitForVolumeModificationsAndGetResult(ctx, client, providerSpec.DatacenterID, volumeID)
 	if nil != err {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
-	err = apis.AddLabelToVolume(ctx, client, providerSpec.DatacenterID, volumeID, "cluster", clusterValue)
+	err = ionosapiwrapper.AddLabelToVolume(ctx, client, providerSpec.DatacenterID, volumeID, "cluster", clusterValue)
 	if nil != err {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
@@ -139,7 +139,7 @@ func (p *MachineProvider) CreateMachine(ctx context.Context, req *driver.CreateM
 
 	serverID := *server.Id
 
-	err = apis.WaitForServerModifications(ctx, client, providerSpec.DatacenterID, serverID)
+	err = ionosapiwrapper.WaitForServerModifications(ctx, client, providerSpec.DatacenterID, serverID)
 	if nil != err {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
@@ -149,37 +149,37 @@ func (p *MachineProvider) CreateMachine(ctx context.Context, req *driver.CreateM
 		return nil, status.Error(codes.Aborted, err.Error())
 	}
 
-	err = apis.WaitForServerModifications(ctx, client, providerSpec.DatacenterID, serverID)
+	err = ionosapiwrapper.WaitForServerModifications(ctx, client, providerSpec.DatacenterID, serverID)
 	if nil != err {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
-	err = apis.AddLabelToServer(ctx, client, providerSpec.DatacenterID, serverID, "cluster", clusterValue)
+	err = ionosapiwrapper.AddLabelToServer(ctx, client, providerSpec.DatacenterID, serverID, "cluster", clusterValue)
 	if nil != err {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
-	err = apis.AddLabelToServer(ctx, client, providerSpec.DatacenterID, serverID, "role", "node")
+	err = ionosapiwrapper.AddLabelToServer(ctx, client, providerSpec.DatacenterID, serverID, "role", "node")
 	if nil != err {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
 	region := apis.GetRegionFromZone(providerSpec.Zone)
 
-	err = apis.AddLabelToServer(ctx, client, providerSpec.DatacenterID, serverID, "region", hex.EncodeToString([]byte(region)))
+	err = ionosapiwrapper.AddLabelToServer(ctx, client, providerSpec.DatacenterID, serverID, "region", hex.EncodeToString([]byte(region)))
 	if nil != err {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
-	err = apis.AddLabelToServer(ctx, client, providerSpec.DatacenterID, serverID, "zone", hex.EncodeToString([]byte(providerSpec.Zone)))
+	err = ionosapiwrapper.AddLabelToServer(ctx, client, providerSpec.DatacenterID, serverID, "zone", hex.EncodeToString([]byte(providerSpec.Zone)))
 	if nil != err {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
 	if "" == providerSpec.FloatingPoolID {
-		err = ensurer.EnsureLANIsAttachedToServer(ctx, client, providerSpec.DatacenterID, serverID, providerSpec.NetworkIDs.WAN)
+		err = ionosapiwrapper.AttachLANToServer(ctx, client, providerSpec.DatacenterID, serverID, providerSpec.NetworkIDs.WAN)
 	} else {
-		err = ensurer.EnsureLANAndFloatingIPIsAttachedToServer(ctx, client, providerSpec.DatacenterID, serverID, providerSpec.NetworkIDs.WAN, providerSpec.FloatingPoolID)
+		err = ionosapiwrapper.AttachLANAndFloatingIPToServer(ctx, client, providerSpec.DatacenterID, serverID, providerSpec.NetworkIDs.WAN, providerSpec.FloatingPoolID)
 	}
 
 	if nil != err {
@@ -187,13 +187,13 @@ func (p *MachineProvider) CreateMachine(ctx context.Context, req *driver.CreateM
 	}
 
 	if "" != providerSpec.NetworkIDs.Workers {
-		err = ensurer.EnsureLANIsAttachedToServer(ctx, client, providerSpec.DatacenterID, serverID, providerSpec.NetworkIDs.Workers)
+		err = ionosapiwrapper.AttachLANToServer(ctx, client, providerSpec.DatacenterID, serverID, providerSpec.NetworkIDs.Workers)
 		if nil != err {
 			return nil, status.Error(codes.Internal, err.Error())
 		}
 	}
 
-	err = apis.WaitForServerModifications(ctx, client, providerSpec.DatacenterID, serverID)
+	err = ionosapiwrapper.WaitForServerModifications(ctx, client, providerSpec.DatacenterID, serverID)
 	if nil != err {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
@@ -203,7 +203,7 @@ func (p *MachineProvider) CreateMachine(ctx context.Context, req *driver.CreateM
 		return nil, status.Error(codes.Aborted, err.Error())
 	}
 
-	server, err = apis.WaitForServerModificationsAndGetResult(ctx, client, providerSpec.DatacenterID, serverID)
+	server, err = ionosapiwrapper.WaitForServerModificationsAndGetResult(ctx, client, providerSpec.DatacenterID, serverID)
 	if nil != err {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
@@ -242,7 +242,7 @@ func (p *MachineProvider) DeleteMachine(ctx context.Context, req *driver.DeleteM
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	client := apis.GetClientForUser(string(secret.Data["user"]), string(secret.Data["password"]))
+	client := ionosapiwrapper.GetClientForUser(string(secret.Data["user"]), string(secret.Data["password"]))
 
 	_, httpResponse, err := client.ServerApi.DatacentersServersStopPost(ctx, providerSpec.DatacenterID, serverID).Execute()
 	if nil != err {
@@ -254,7 +254,7 @@ func (p *MachineProvider) DeleteMachine(ctx context.Context, req *driver.DeleteM
 		}
 	}
 
-	err = apis.WaitForServerModifications(ctx, client, providerSpec.DatacenterID, serverID)
+	err = ionosapiwrapper.WaitForServerModifications(ctx, client, providerSpec.DatacenterID, serverID)
 	if nil != err {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
@@ -304,7 +304,7 @@ func (p *MachineProvider) GetMachineStatus(ctx context.Context, req *driver.GetM
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	client := apis.GetClientForUser(string(secret.Data["user"]), string(secret.Data["password"]))
+	client := ionosapiwrapper.GetClientForUser(string(secret.Data["user"]), string(secret.Data["password"]))
 
 	server, _, err := client.ServerApi.DatacentersServersFindById(ctx, serverData.DatacenterID, serverData.ID).Depth(1).Execute()
 	if nil != err {
@@ -336,7 +336,7 @@ func (p *MachineProvider) ListMachines(ctx context.Context, req *driver.ListMach
 	klog.V(2).Infof("List machines request has been received for %q", machineClass.Name)
 	defer klog.V(2).Infof("List machines request has been processed for %q", machineClass.Name)
 
-	client := apis.GetClientForUser(string(secret.Data["user"]), string(secret.Data["password"]))
+	client := ionosapiwrapper.GetClientForUser(string(secret.Data["user"]), string(secret.Data["password"]))
 
 	servers, _, err := client.ServerApi.DatacentersServersGet(ctx, providerSpec.DatacenterID).Depth(1).Execute()
 	if nil != err {

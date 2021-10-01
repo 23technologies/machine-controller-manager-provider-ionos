@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2021 SAP SE or an SAP affiliate company. All rights reserved.
+Copyright (c) 2021 23 Technologies GmbH. All rights reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,8 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// Package apis is the main package for provider specific APIs
-package apis
+// Package pkg is the main package for IONOS specific APIs
+package pkg
 
 import (
 	ionossdk "github.com/ionos-cloud/sdk-go/v5"
@@ -26,7 +26,7 @@ var singletons = make(map[string]*ionossdk.APIClient)
 // GetClientForUser returns an underlying IONOS client for the given user name.
 //
 // PARAMETERS
-// user     string User name to look up client instance for
+// user  string User name to look up client instance for
 // password string Password for the user name. Please note that the password
 //                 will not be replaced if an client is already cached.
 func GetClientForUser(user, password string) *ionossdk.APIClient {

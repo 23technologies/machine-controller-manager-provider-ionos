@@ -20,7 +20,7 @@ package ionos
 import (
 	"context"
 
-	"github.com/23technologies/machine-controller-manager-provider-ionos/pkg/ionos/apis"
+	ionosapiwrapper "github.com/23technologies/ionos-api-wrapper/pkg"
 	"github.com/23technologies/machine-controller-manager-provider-ionos/pkg/ionos/apis/mock"
 	"github.com/23technologies/machine-controller-manager-provider-ionos/pkg/spi"
 	"github.com/gardener/machine-controller-manager/pkg/util/provider/driver"
@@ -53,7 +53,7 @@ var _ = Describe("MachineController", func() {
 	var _ = BeforeEach(func() {
 		mockTestEnv = mock.NewMockTestEnv()
 
-		apis.SetClientForUser("dummy-user", mockTestEnv.Client)
+		ionosapiwrapper.SetClientForUser("dummy-user", mockTestEnv.Client)
 		mock.SetupImagesEndpointOnMux(mockTestEnv.Mux)
 		mock.SetupServersEndpointOnMux(mockTestEnv.Mux)
 		mock.SetupTestServerEndpointOnMux(mockTestEnv.Mux)
@@ -63,7 +63,7 @@ var _ = Describe("MachineController", func() {
 
 	var _ = AfterEach(func() {
 		mockTestEnv.Teardown()
-		apis.SetClientForUser("dummy-user", nil)
+		ionosapiwrapper.SetClientForUser("dummy-user", nil)
 	})
 
 	Describe("#CreateMachine", func() {
