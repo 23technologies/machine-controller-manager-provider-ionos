@@ -22,7 +22,7 @@ import (
 )
 
 const (
-	TestProviderSpec = "{\"datacenterID\":\"01234567-89ab-4def-0123-c56789abcdef\",\"cluster\":\"xyz\",\"zone\":\"de-fra\",\"cores\":1,\"memory\":1024,\"imageID\":\"15f67991-0f51-4efc-a8ad-ef1fb31a480c\",\"SSHKey\":\"ssh-rsa invalid\",\"NetworkIDs\":{\"wan\":\"1\"}}"
+	TestProviderSpec = "{\"datacenterID\":\"01234567-89ab-4def-0123-c56789abcdef\",\"cluster\":\"xyz\",\"zone\":\"de-fra\",\"cores\":1,\"memory\":1024,\"imageID\":\"15f67991-0f51-4efc-a8ad-ef1fb31a480c\",\"sshKey\":\"ssh-rsa invalid\",\"networkIDs\":{\"wan\":\"1\"}}"
 	TestProviderSpecCluster = "xyz"
 	TestProviderSpecDatacenterID = "01234567-89ab-4def-0123-c56789abcdef"
 	TestProviderSpecNetworkID = "1"

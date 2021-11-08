@@ -18,8 +18,8 @@ limitations under the License.
 package mock
 
 import (
-	"fmt"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strings"
 
@@ -211,7 +211,7 @@ func handleLabelEndpointRequest(res http.ResponseWriter, req *http.Request) {
 "items": [ ]
 }
 		`, uuid.NewString())))
-} else if (strings.ToLower(req.Method) == "post") {
+	} else if (strings.ToLower(req.Method) == "post") {
 		res.WriteHeader(http.StatusCreated)
 
 		jsonData := make([]byte, req.ContentLength)
