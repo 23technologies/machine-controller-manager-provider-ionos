@@ -63,7 +63,7 @@ func AttachLANAndFloatingIPToServer(ctx context.Context, client *ionossdk.APICli
 		return errors.New(fmt.Sprintf("Floating Pool IP Block '%s' given is exhausted", floatingPoolID))
 	}
 
-	return attachLANToServer(ctx, client, datacenterID, serverID, lanID, floatingPoolIP)
+	return attachLANToServer(ctx, client, datacenterID, serverID, lanID, floatingPoolIP, true)
 }
 
 // attachLANToServer attaches the LAN ID given to the server and uses the floating pool IP.
@@ -75,7 +75,8 @@ func AttachLANAndFloatingIPToServer(ctx context.Context, client *ionossdk.APICli
 // serverID       string              Server ID
 // lanID          string              LAN ID
 // floatingPoolIP string              Floating pool IP to use
-func attachLANToServer(ctx context.Context, client *ionossdk.APIClient, datacenterID, serverID, lanID, floatingPoolIP string) error {
+// enableDHCP     bool                False to disable DHCP for the NIC
+func attachLANToServer(ctx context.Context, client *ionossdk.APIClient, datacenterID, serverID, lanID, floatingPoolIP string, enableDHCP bool) error {
 	numericLANID, err := strconv.Atoi(lanID)
 	if nil != err {
 		return err
@@ -90,6 +91,10 @@ func attachLANToServer(ctx context.Context, client *ionossdk.APIClient, datacent
 	if "" != floatingPoolIP {
 		ips := []string{floatingPoolIP}
 		nicProperties.Ips = &ips
+	}
+
+	if !enableDHCP {
+		nicProperties.Dhcp = &enableDHCP
 	}
 
 	nicApiCreateRequest := client.NicApi.DatacentersServersNicsPost(ctx, datacenterID, serverID).Depth(0)
@@ -115,5 +120,17 @@ func attachLANToServer(ctx context.Context, client *ionossdk.APIClient, datacent
 // serverID     string              Server ID
 // lanID        string              LAN ID
 func AttachLANToServer(ctx context.Context, client *ionossdk.APIClient, datacenterID, serverID, lanID string) error {
-	return attachLANToServer(ctx, client, datacenterID, serverID, lanID, "")
+	return attachLANToServer(ctx, client, datacenterID, serverID, lanID, "", true)
+}
+
+// AttachLANToServerWithoutDHCP attaches the LAN ID given to the server without DHCP support.
+//
+// PARAMETERS
+// ctx          context.Context     Execution context
+// client       *ionossdk.APIClient IONOS client
+// datacenterID string              Datacenter ID
+// serverID     string              Server ID
+// lanID        string              LAN ID
+func AttachLANToServerWithoutDHCP(ctx context.Context, client *ionossdk.APIClient, datacenterID, serverID, lanID string) error {
+	return attachLANToServer(ctx, client, datacenterID, serverID, lanID, "", false)
 }

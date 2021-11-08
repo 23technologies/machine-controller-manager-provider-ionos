@@ -187,7 +187,7 @@ func (p *MachineProvider) CreateMachine(ctx context.Context, req *driver.CreateM
 	}
 
 	if "" != providerSpec.NetworkIDs.Workers {
-		err = ionosapiwrapper.AttachLANToServer(ctx, client, providerSpec.DatacenterID, serverID, providerSpec.NetworkIDs.Workers)
+		err = ionosapiwrapper.AttachLANToServerWithoutDHCP(ctx, client, providerSpec.DatacenterID, serverID, providerSpec.NetworkIDs.Workers)
 		if nil != err {
 			return nil, status.Error(codes.Internal, err.Error())
 		}

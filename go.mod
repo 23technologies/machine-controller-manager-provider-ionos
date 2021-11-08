@@ -3,7 +3,7 @@ module github.com/23technologies/machine-controller-manager-provider-ionos
 go 1.13
 
 require (
-	github.com/23technologies/ionos-api-wrapper v0.1.0
+	github.com/23technologies/ionos-api-wrapper v0.1.2
 	github.com/gardener/machine-controller-manager v0.40.0
 	github.com/google/uuid v1.2.0
 	github.com/ionos-cloud/sdk-go/v5 v5.1.7
