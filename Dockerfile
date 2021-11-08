@@ -15,6 +15,7 @@ WORKDIR /
 
 #############      machine-controller               #############
 FROM base AS machine-controller
+LABEL org.opencontainers.image.source="https://github.com/23technologies/machine-controller-manager-provider-ionos"
 
 COPY --from=builder /go/bin/machine-controller /machine-controller
 ENTRYPOINT ["/machine-controller"]
