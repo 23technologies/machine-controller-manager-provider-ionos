@@ -50,7 +50,7 @@ func WaitForDatacenterModificationsAndGetResult(ctx context.Context, client *ion
 	for repeat {
 		datacenterResult, httpResponse, err := client.DataCenterApi.DatacentersFindById(ctx, id).Depth(0).Execute()
 
-		if 404 != httpResponse.StatusCode {
+		if nil == httpResponse || 404 != httpResponse.StatusCode {
 			if nil != err {
 				return datacenter, err
 			}

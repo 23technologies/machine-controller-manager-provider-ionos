@@ -76,7 +76,7 @@ func WaitForServerModificationsAndGetResult(ctx context.Context, client *ionossd
 	for repeat {
 		serverResult, httpResponse, err := client.ServerApi.DatacentersServersFindById(ctx, datacenterID, id).Depth(0).Execute()
 
-		if 404 != httpResponse.StatusCode {
+		if nil == httpResponse || 404 != httpResponse.StatusCode {
 			if nil != err {
 				return server, err
 			}

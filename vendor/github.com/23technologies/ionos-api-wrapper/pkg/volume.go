@@ -76,7 +76,7 @@ func WaitForVolumeModificationsAndGetResult(ctx context.Context, client *ionossd
 	for repeat {
 		volumeResult, httpResponse, err := client.VolumeApi.DatacentersVolumesFindById(ctx, datacenterID, id).Depth(0).Execute()
 
-		if 404 != httpResponse.StatusCode {
+		if nil == httpResponse || 404 != httpResponse.StatusCode {
 			if nil != err {
 				return volume, err
 			}

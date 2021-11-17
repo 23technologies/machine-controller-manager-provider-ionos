@@ -24,4 +24,4 @@ import (
 // Constant defaultOperationInterval is the time to wait between retries
 const defaultOperationInterval = 15 * time.Second
 // Constant defaultOperationRetries is the maximum number of retries
-const defaultOperationRetries = 20
+const defaultOperationRetries = 40

@@ -54,7 +54,7 @@ func WaitForNicModificationsAndGetResult(ctx context.Context, client *ionossdk.A
 	for repeat {
 		nicResult, httpResponse, err := client.NicApi.DatacentersServersNicsFindById(ctx, datacenterID, serverID, nicID).Depth(0).Execute()
 
-		if 404 != httpResponse.StatusCode {
+		if nil == httpResponse || 404 != httpResponse.StatusCode {
 			if nil != err {
 				return nic, err
 			}
