@@ -25,6 +25,29 @@ import (
 	ionossdk "github.com/ionos-cloud/sdk-go/v5"
 )
 
+// AddLabelToDatacenter adds a label to the server ID given
+//
+// PARAMETERS
+// ctx          context.Context     Execution context
+// client       *ionossdk.APIClient IONOS client
+// id           string              Datacenter ID
+// key          string              Label key
+// value        string              Label value
+func AddLabelToDatacenter(ctx context.Context, client *ionossdk.APIClient, id, key, value string) error {
+	labelProperties := ionossdk.LabelResourceProperties{
+		Key: &key,
+		Value: &value,
+	}
+
+	labelApiCreateRequest := client.LabelApi.DatacentersLabelsPost(ctx, id).Depth(0)
+	_, _, err := labelApiCreateRequest.Label(ionossdk.LabelResource{Properties: &labelProperties}).Execute()
+	if nil != err {
+		return err
+	}
+
+	return nil
+}
+
 // WaitForDatacenterModifications waits for all pending changes of a datacenter to complete.
 //
 // PARAMETERS

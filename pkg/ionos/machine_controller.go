@@ -177,9 +177,9 @@ func (p *MachineProvider) CreateMachine(ctx context.Context, req *driver.CreateM
 	}
 
 	if "" == providerSpec.FloatingPoolID {
-		err = ionosapiwrapper.AttachLANToServer(ctx, client, providerSpec.DatacenterID, serverID, providerSpec.NetworkIDs.WAN)
+		err = ionosapiwrapper.AttachWANToServer(ctx, client, providerSpec.DatacenterID, serverID, providerSpec.NetworkIDs.WAN)
 	} else {
-		err = ionosapiwrapper.AttachLANAndFloatingIPToServer(ctx, client, providerSpec.DatacenterID, serverID, providerSpec.NetworkIDs.WAN, providerSpec.FloatingPoolID)
+		err = ionosapiwrapper.AttachWANAndFloatingIPToServer(ctx, client, providerSpec.DatacenterID, serverID, providerSpec.NetworkIDs.WAN, providerSpec.FloatingPoolID)
 	}
 
 	if nil != err {
