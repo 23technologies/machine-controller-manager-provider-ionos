@@ -84,7 +84,7 @@ func (p *MachineProvider) CreateMachine(ctx context.Context, req *driver.CreateM
 	if 0 == volumeSize {
 		volumeSize = *image.Properties.Size
 	} else {
-		volumeSize = float32(math.Max(math.Ceil(float64(volumeSize) / 1048576), float64(*image.Properties.Size)))
+		volumeSize = float32(math.Max(math.Ceil(float64(volumeSize) / 1073741824), float64(*image.Properties.Size)))
 	}
 
 	volumeProperties := ionossdk.VolumeProperties{
