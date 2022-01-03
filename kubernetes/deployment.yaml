@@ -4,6 +4,7 @@ apiVersion: apps/v1 # Version may change based on kubernetes version
 kind: Deployment
 metadata:
   name: machine-controller-manager
+  namespace: shoot--foobar--ionos
 spec:
   replicas: 1
   template:
@@ -13,7 +14,7 @@ spec:
     spec:
       containers:
       - name: machine-controller-manager
-        image:eu.gcr.io/gardener-project/gardener/machine-controller-manager:v0.28.0-dev-793b105c41adfc434e07107decaf1ac67fc1fd3f
+        image: eu.gcr.io/gardener-project/gardener/machine-controller-manager:v0.42.0
         imagePullPolicy: Always
         command:
           - ./machine-controller-manager
