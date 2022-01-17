@@ -43,10 +43,28 @@ const ionosVolumeType = "SSD"
 // ctx context.Context              Execution context
 // req *driver.CreateMachineRequest The create request for VM creation
 func (p *MachineProvider) CreateMachine(ctx context.Context, req *driver.CreateMachineRequest) (*driver.CreateMachineResponse, error) {
+	extendedCtx := context.WithValue(ctx, CtxWrapDataKey("MethodData"), &CreateMachineMethodData{})
+
+	resp, err := p.createMachine(extendedCtx, req)
+
+	if nil != err {
+		p.createMachineOnErrorCleanup(extendedCtx, req, err)
+	}
+
+	return resp, err
+}
+
+// createMachine handles the actual machine creation request without cleanup
+//
+// PARAMETERS
+// ctx context.Context              Execution context
+// req *driver.CreateMachineRequest The create request for VM creation
+func (p *MachineProvider) createMachine(ctx context.Context, req *driver.CreateMachineRequest) (*driver.CreateMachineResponse, error) {
 	var (
 		machine      = req.Machine
 		machineClass = req.MachineClass
 		secret       = req.Secret
+		resultData   = ctx.Value(CtxWrapDataKey("MethodData")).(*CreateMachineMethodData)
 	)
 
 	// Log messages to track request
@@ -107,6 +125,7 @@ func (p *MachineProvider) CreateMachine(ctx context.Context, req *driver.CreateM
 
 	clusterValue := hex.EncodeToString([]byte(providerSpec.Cluster))
 	volumeID := *volume.Id
+	resultData.VolumeID = volumeID
 
 	volume, err = ionosapiwrapper.WaitForVolumeModificationsAndGetResult(ctx, client, providerSpec.DatacenterID, volumeID)
 	if nil != err {
@@ -139,6 +158,7 @@ func (p *MachineProvider) CreateMachine(ctx context.Context, req *driver.CreateM
 	}
 
 	serverID := *server.Id
+	resultData.ServerID = serverID
 
 	err = ionosapiwrapper.WaitForServerModifications(ctx, client, providerSpec.DatacenterID, serverID)
 	if nil != err {
@@ -215,6 +235,38 @@ func (p *MachineProvider) CreateMachine(ctx context.Context, req *driver.CreateM
 	}
 
 	return response, nil
+}
+
+// createMachineOnErrorCleanup cleans up a failed machine creation request
+//
+// PARAMETERS
+// ctx context.Context              Execution context
+// req *driver.CreateMachineRequest The create request for VM creation
+// err error                        Error encountered
+func (p *MachineProvider) createMachineOnErrorCleanup(ctx context.Context, req *driver.CreateMachineRequest, err error) {
+	var (
+		machineClass = req.MachineClass
+		secret       = req.Secret
+		resultData   = ctx.Value(CtxWrapDataKey("MethodData")).(*CreateMachineMethodData)
+	)
+
+	client := ionosapiwrapper.GetClientForUser(string(secret.Data["user"]), string(secret.Data["password"]))
+	providerSpec, _ := transcoder.DecodeProviderSpecFromMachineClass(machineClass, secret)
+
+	if resultData.ServerID != "" {
+		_, _, err := client.ServerApi.DatacentersServersStopPost(ctx, providerSpec.DatacenterID, resultData.ServerID).Execute()
+		if nil == err {
+			ionosapiwrapper.WaitForServerModifications(ctx, client, providerSpec.DatacenterID, resultData.ServerID)
+		}
+	}
+
+	if resultData.VolumeID != "" {
+		_, _, _ = client.VolumeApi.DatacentersVolumesDelete(ctx, providerSpec.DatacenterID, resultData.VolumeID).Depth(0).Execute()
+	}
+
+	if resultData.ServerID != "" {
+		_, _, _ = client.ServerApi.DatacentersServersDelete(ctx, providerSpec.DatacenterID, resultData.ServerID).Depth(0).Execute()
+	}
 }
 
 // DeleteMachine handles a machine deletion request
