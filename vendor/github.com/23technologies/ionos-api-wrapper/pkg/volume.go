@@ -22,7 +22,7 @@ import (
 	"errors"
 	"time"
 
-	ionossdk "github.com/ionos-cloud/sdk-go/v5"
+	ionossdk "github.com/ionos-cloud/sdk-go/v6"
 )
 
 // AddLabelToVolume adds a label to the server ID given
@@ -40,8 +40,8 @@ func AddLabelToVolume(ctx context.Context, client *ionossdk.APIClient, datacente
 		Value: &value,
 	}
 
-	labelApiCreateRequest := client.LabelApi.DatacentersVolumesLabelsPost(ctx, datacenterID, id).Depth(0)
-	_, _, err := labelApiCreateRequest.Label(ionossdk.LabelResource{Properties: &labelProperties}).Execute()
+	labelsApiCreateRequest := client.LabelsApi.DatacentersVolumesLabelsPost(ctx, datacenterID, id).Depth(0)
+	_, _, err := labelsApiCreateRequest.Label(ionossdk.LabelResource{Properties: &labelProperties}).Execute()
 	if nil != err {
 		return err
 	}
@@ -74,7 +74,7 @@ func WaitForVolumeModificationsAndGetResult(ctx context.Context, client *ionossd
 	tryCount := 0
 
 	for repeat {
-		volumeResult, httpResponse, err := client.VolumeApi.DatacentersVolumesFindById(ctx, datacenterID, id).Depth(0).Execute()
+		volumeResult, httpResponse, err := client.VolumesApi.DatacentersVolumesFindById(ctx, datacenterID, id).Depth(0).Execute()
 
 		if nil == httpResponse || 404 != httpResponse.StatusCode {
 			if nil != err {

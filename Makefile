@@ -53,10 +53,6 @@ revendor:
 	@env GO111MODULE=on go mod vendor
 	@env GO111MODULE=on go mod tidy
 
-.PHONY: update-dependencies
-update-dependencies:
-	@env GO111MODULE=on go get -u
-
 #########################################
 # Rules for testing
 #########################################

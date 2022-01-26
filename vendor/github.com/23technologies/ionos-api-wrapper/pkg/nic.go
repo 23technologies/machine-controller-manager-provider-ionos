@@ -22,7 +22,7 @@ import (
 	"errors"
 	"time"
 
-	ionossdk "github.com/ionos-cloud/sdk-go/v5"
+	ionossdk "github.com/ionos-cloud/sdk-go/v6"
 )
 
 // WaitForNicModifications waits for all pending changes of a NIC to complete.
@@ -52,7 +52,7 @@ func WaitForNicModificationsAndGetResult(ctx context.Context, client *ionossdk.A
 	tryCount := 0
 
 	for repeat {
-		nicResult, httpResponse, err := client.NicApi.DatacentersServersNicsFindById(ctx, datacenterID, serverID, nicID).Depth(0).Execute()
+		nicResult, httpResponse, err := client.NetworkInterfacesApi.DatacentersServersNicsFindById(ctx, datacenterID, serverID, nicID).Depth(0).Execute()
 
 		if nil == httpResponse || 404 != httpResponse.StatusCode {
 			if nil != err {

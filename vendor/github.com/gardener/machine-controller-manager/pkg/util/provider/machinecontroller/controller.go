@@ -27,6 +27,7 @@ import (
 	machineapi "github.com/gardener/machine-controller-manager/pkg/client/clientset/versioned/typed/machine/v1alpha1"
 	machineinformers "github.com/gardener/machine-controller-manager/pkg/client/informers/externalversions/machine/v1alpha1"
 	machinelisters "github.com/gardener/machine-controller-manager/pkg/client/listers/machine/v1alpha1"
+
 	"github.com/gardener/machine-controller-manager/pkg/handlers"
 	"github.com/gardener/machine-controller-manager/pkg/util/k8sutils"
 	"github.com/gardener/machine-controller-manager/pkg/util/provider/drain"
@@ -48,7 +49,7 @@ import (
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/record"
 	"k8s.io/client-go/util/workqueue"
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 )
 
 const (
@@ -196,7 +197,9 @@ func NewController(
 	controller.machineSafetyOrphanVMsQueue.Add("")
 	controller.machineSafetyAPIServerQueue.Add("")
 	machineInformer.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{
-		// deleteMachineToSafety makes sure that orphan VM handler is invoked
+		// updateMachineToSafety makes sure that orphan VM handler is invoked on some specific machine obj updates
+		UpdateFunc: controller.updateMachineToSafety,
+		// deleteMachineToSafety makes sure that orphan VM handler is invoked on any machine deletion
 		DeleteFunc: controller.deleteMachineToSafety,
 	})
 

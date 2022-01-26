@@ -18,7 +18,7 @@ limitations under the License.
 package pkg
 
 import (
-	ionossdk "github.com/ionos-cloud/sdk-go/v5"
+	ionossdk "github.com/ionos-cloud/sdk-go/v6"
 )
 
 var singletons = make(map[string]*ionossdk.APIClient)
@@ -33,7 +33,7 @@ func GetClientForUser(user, password string) *ionossdk.APIClient {
 	client, ok := singletons[user]
 
 	if !ok {
-		config := ionossdk.NewConfiguration(user, password, "")
+		config := ionossdk.NewConfiguration(user, password, "", "")
 		client = ionossdk.NewAPIClient(config)
 	}
 

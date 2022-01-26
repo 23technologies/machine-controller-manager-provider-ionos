@@ -24,7 +24,7 @@ import (
 	"net"
 	"strconv"
 
-	ionossdk "github.com/ionos-cloud/sdk-go/v5"
+	ionossdk "github.com/ionos-cloud/sdk-go/v6"
 )
 
 // nicConfiguration is a struct to provide configuration values for new NICs
@@ -71,7 +71,7 @@ func attachLANToServer(ctx context.Context, client *ionossdk.APIClient, datacent
 		nicProperties.FirewallActive = &nicConfiguration.EnableFirewall
 	}
 
-	nicApiCreateRequest := client.NicApi.DatacentersServersNicsPost(ctx, datacenterID, serverID).Depth(0)
+	nicApiCreateRequest := client.NetworkInterfacesApi.DatacentersServersNicsPost(ctx, datacenterID, serverID).Depth(0)
 	nic, _, err := nicApiCreateRequest.Nic(ionossdk.Nic{Properties: &nicProperties}).Execute()
 	if nil != err {
 		return err
