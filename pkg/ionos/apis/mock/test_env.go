@@ -21,8 +21,11 @@ import (
 	"net/http"
 	"net/http/httptest"
 
-	ionossdk "github.com/ionos-cloud/sdk-go/v5"
+	ionossdk "github.com/ionos-cloud/sdk-go/v6"
 )
+
+// APIBasePath contains the server API base path
+const apiBasePath = "/cloudapi/v6"
 
 // MockTestEnv represents the test environment for testing IONOS API calls
 type MockTestEnv struct {
@@ -45,16 +48,8 @@ func NewMockTestEnv() MockTestEnv {
 	mux := http.NewServeMux()
 	server := httptest.NewServer(mux)
 
-	config := ionossdk.NewConfiguration("user", "dummy-password", "")
+	client := ionossdk.NewAPIClient(ionossdk.NewConfiguration("user", "dummy-password", "", server.URL))
 
-	config.Servers = ionossdk.ServerConfigurations{
-		{
-			URL: server.URL,
-			Description: "Local mocked server base URL",
-		},
-	}
-
-	client := ionossdk.NewAPIClient(config)
 
 	return MockTestEnv{
 		Server: server,

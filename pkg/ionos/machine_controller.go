@@ -30,7 +30,7 @@ import (
 	"github.com/gardener/machine-controller-manager/pkg/util/provider/driver"
 	"github.com/gardener/machine-controller-manager/pkg/util/provider/machinecodes/codes"
 	"github.com/gardener/machine-controller-manager/pkg/util/provider/machinecodes/status"
-	ionossdk "github.com/ionos-cloud/sdk-go/v5"
+	ionossdk "github.com/ionos-cloud/sdk-go/v6"
 	"k8s.io/klog"
 )
 
@@ -87,7 +87,7 @@ func (p *MachineProvider) createMachine(ctx context.Context, req *driver.CreateM
 
 	client := ionosapiwrapper.GetClientForUser(string(secret.Data["user"]), string(secret.Data["password"]))
 
-	image, _, err := client.ImageApi.ImagesFindById(ctx, providerSpec.ImageID).Depth(1).Execute()
+	image, _, err := client.ImagesApi.ImagesFindById(ctx, providerSpec.ImageID).Depth(1).Execute()
 	if nil != err {
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	} else if (!image.Properties.HasCloudInit() || "NONE" == *image.Properties.CloudInit) {
@@ -115,7 +115,7 @@ func (p *MachineProvider) createMachine(ctx context.Context, req *driver.CreateM
 		UserData: &userDataBase64Enc,
 	}
 
-	volumeApiCreateRequest := client.VolumeApi.DatacentersVolumesPost(ctx, providerSpec.DatacenterID).Depth(0)
+	volumeApiCreateRequest := client.VolumesApi.DatacentersVolumesPost(ctx, providerSpec.DatacenterID).Depth(0)
 	volume, httpResponse, err := volumeApiCreateRequest.Volume(ionossdk.Volume{Properties: &volumeProperties}).Execute()
 	if 404 == httpResponse.StatusCode {
 		return nil, status.Error(codes.Canceled, "datacenterID given is invalid")
@@ -151,7 +151,7 @@ func (p *MachineProvider) createMachine(ctx context.Context, req *driver.CreateM
 		BootVolume: &ionossdk.ResourceReference{Id: &volumeID},
 	}
 
-	serverApiCreateRequest := client.ServerApi.DatacentersServersPost(ctx, providerSpec.DatacenterID).Depth(0)
+	serverApiCreateRequest := client.ServersApi.DatacentersServersPost(ctx, providerSpec.DatacenterID).Depth(0)
 	server, _, err := serverApiCreateRequest.Server(ionossdk.Server{Entities: &serverEntities, Properties: &serverProperties}).Execute()
 	if nil != err {
 		return nil, status.Error(codes.Unavailable, err.Error())
@@ -165,7 +165,7 @@ func (p *MachineProvider) createMachine(ctx context.Context, req *driver.CreateM
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
-	_, _, err = client.ServerApi.DatacentersServersStopPost(ctx, providerSpec.DatacenterID, serverID).Execute()
+	_, err = client.ServersApi.DatacentersServersStopPost(ctx, providerSpec.DatacenterID, serverID).Execute()
 	if nil != err {
 		return nil, status.Error(codes.Aborted, err.Error())
 	}
@@ -219,7 +219,7 @@ func (p *MachineProvider) createMachine(ctx context.Context, req *driver.CreateM
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
-	_, _, err = client.ServerApi.DatacentersServersStartPost(ctx, providerSpec.DatacenterID, serverID).Execute()
+	_, err = client.ServersApi.DatacentersServersStartPost(ctx, providerSpec.DatacenterID, serverID).Execute()
 	if nil != err {
 		return nil, status.Error(codes.Aborted, err.Error())
 	}
@@ -254,18 +254,18 @@ func (p *MachineProvider) createMachineOnErrorCleanup(ctx context.Context, req *
 	providerSpec, _ := transcoder.DecodeProviderSpecFromMachineClass(machineClass, secret)
 
 	if resultData.ServerID != "" {
-		_, _, err := client.ServerApi.DatacentersServersStopPost(ctx, providerSpec.DatacenterID, resultData.ServerID).Execute()
+		_, err := client.ServersApi.DatacentersServersStopPost(ctx, providerSpec.DatacenterID, resultData.ServerID).Execute()
 		if nil == err {
 			ionosapiwrapper.WaitForServerModifications(ctx, client, providerSpec.DatacenterID, resultData.ServerID)
 		}
 	}
 
 	if resultData.VolumeID != "" {
-		_, _, _ = client.VolumeApi.DatacentersVolumesDelete(ctx, providerSpec.DatacenterID, resultData.VolumeID).Depth(0).Execute()
+		_, _ = client.VolumesApi.DatacentersVolumesDelete(ctx, providerSpec.DatacenterID, resultData.VolumeID).Depth(0).Execute()
 	}
 
 	if resultData.ServerID != "" {
-		_, _, _ = client.ServerApi.DatacentersServersDelete(ctx, providerSpec.DatacenterID, resultData.ServerID).Depth(0).Execute()
+		_, _ = client.ServersApi.DatacentersServersDelete(ctx, providerSpec.DatacenterID, resultData.ServerID).Depth(0).Execute()
 	}
 }
 
@@ -297,7 +297,7 @@ func (p *MachineProvider) DeleteMachine(ctx context.Context, req *driver.DeleteM
 
 	client := ionosapiwrapper.GetClientForUser(string(secret.Data["user"]), string(secret.Data["password"]))
 
-	_, httpResponse, err := client.ServerApi.DatacentersServersStopPost(ctx, providerSpec.DatacenterID, serverID).Execute()
+	httpResponse, err := client.ServersApi.DatacentersServersStopPost(ctx, providerSpec.DatacenterID, serverID).Execute()
 	if nil != err {
 		if 404 == httpResponse.StatusCode {
 			klog.V(3).Infof("VM %s (%s) does not exist", machine.Name, serverID)
@@ -312,19 +312,19 @@ func (p *MachineProvider) DeleteMachine(ctx context.Context, req *driver.DeleteM
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
-	server, _, err := client.ServerApi.DatacentersServersFindById(ctx, providerSpec.DatacenterID, serverID).Depth(3).Execute()
+	server, _, err := client.ServersApi.DatacentersServersFindById(ctx, providerSpec.DatacenterID, serverID).Depth(3).Execute()
 	if nil != err {
 		return nil, status.Error(codes.Unavailable, err.Error())
 	}
 
 	for _, volume := range *server.Entities.Volumes.Items {
-		_, _, err := client.VolumeApi.DatacentersVolumesDelete(ctx, providerSpec.DatacenterID, *volume.Id).Depth(0).Execute()
+		_, err := client.VolumesApi.DatacentersVolumesDelete(ctx, providerSpec.DatacenterID, *volume.Id).Depth(0).Execute()
 		if nil != err {
 			return nil, status.Error(codes.Unavailable, err.Error())
 		}
 	}
 
-	_, _, err = client.ServerApi.DatacentersServersDelete(ctx, providerSpec.DatacenterID, serverID).Depth(0).Execute()
+	_, err = client.ServersApi.DatacentersServersDelete(ctx, providerSpec.DatacenterID, serverID).Depth(0).Execute()
 	if nil != err {
 		return nil, status.Error(codes.Unavailable, err.Error())
 	}
@@ -359,7 +359,7 @@ func (p *MachineProvider) GetMachineStatus(ctx context.Context, req *driver.GetM
 
 	client := ionosapiwrapper.GetClientForUser(string(secret.Data["user"]), string(secret.Data["password"]))
 
-	server, _, err := client.ServerApi.DatacentersServersFindById(ctx, serverData.DatacenterID, serverData.ID).Depth(1).Execute()
+	server, _, err := client.ServersApi.DatacentersServersFindById(ctx, serverData.DatacenterID, serverData.ID).Depth(1).Execute()
 	if nil != err {
 		return nil, status.Error(codes.NotFound, err.Error())
 	} else if "INACTIVE" == *server.Metadata.State {
@@ -391,7 +391,7 @@ func (p *MachineProvider) ListMachines(ctx context.Context, req *driver.ListMach
 
 	client := ionosapiwrapper.GetClientForUser(string(secret.Data["user"]), string(secret.Data["password"]))
 
-	servers, _, err := client.ServerApi.DatacentersServersGet(ctx, providerSpec.DatacenterID).Depth(1).Execute()
+	servers, _, err := client.ServersApi.DatacentersServersGet(ctx, providerSpec.DatacenterID).Depth(1).Execute()
 	if nil != err {
 		return nil, status.Error(codes.Unavailable, err.Error())
 	}
@@ -405,7 +405,7 @@ func (p *MachineProvider) ListMachines(ctx context.Context, req *driver.ListMach
 			continue
 		}
 
-		labels, _, err := client.LabelApi.DatacentersServersLabelsGet(ctx, providerSpec.DatacenterID, *server.Id).Depth(1).Execute()
+		labels, _, err := client.LabelsApi.DatacentersServersLabelsGet(ctx, providerSpec.DatacenterID, *server.Id).Depth(1).Execute()
 		if nil != err {
 			return nil, status.Error(codes.Unavailable, err.Error())
 		}

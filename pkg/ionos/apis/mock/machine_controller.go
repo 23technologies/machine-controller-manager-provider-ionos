@@ -321,7 +321,7 @@ func newJsonServerData(serverID string, serverState string) string {
 // PARAMETERS
 // mux *http.ServeMux Mux to add handler to
 func SetupImagesEndpointOnMux(mux *http.ServeMux) {
-	mux.HandleFunc("/images/", func(res http.ResponseWriter, req *http.Request) {
+	mux.HandleFunc(apiBasePath + "/images/", func(res http.ResponseWriter, req *http.Request) {
 		res.Header().Add("Content-Type", "application/json; charset=utf-8")
 
 		if (strings.HasSuffix(req.URL.Path, fmt.Sprintf("/%s", TestProviderSpecImageID))) {
@@ -338,7 +338,7 @@ func SetupImagesEndpointOnMux(mux *http.ServeMux) {
 // PARAMETERS
 // mux *http.ServeMux Mux to add handler to
 func SetupServersEndpointOnMux(mux *http.ServeMux) {
-	mux.HandleFunc(fmt.Sprintf("/datacenters/%s/servers", TestProviderSpecDatacenterID), func(res http.ResponseWriter, req *http.Request) {
+	mux.HandleFunc(fmt.Sprintf("%s/datacenters/%s/servers", apiBasePath, TestProviderSpecDatacenterID), func(res http.ResponseWriter, req *http.Request) {
 		res.Header().Add("Content-Type", "application/json; charset=utf-8")
 
 		if (strings.ToLower(req.Method) == "get") {
@@ -379,7 +379,7 @@ func SetupServersEndpointOnMux(mux *http.ServeMux) {
 // PARAMETERS
 // mux *http.ServeMux Mux to add handler to
 func SetupTestServerEndpointOnMux(mux *http.ServeMux) {
-	baseURL := fmt.Sprintf("/datacenters/%s/servers/%s", TestProviderSpecDatacenterID, TestServerID)
+	baseURL := fmt.Sprintf("%s/datacenters/%s/servers/%s", apiBasePath, TestProviderSpecDatacenterID, TestServerID)
 
 	mux.HandleFunc(baseURL, func(res http.ResponseWriter, req *http.Request) {
 		res.Header().Add("Content-Type", "application/json; charset=utf-8")
@@ -444,7 +444,7 @@ func SetupTestServerEndpointOnMux(mux *http.ServeMux) {
 // PARAMETERS
 // mux *http.ServeMux Mux to add handler to
 func SetupTestVolumeEndpointOnMux(mux *http.ServeMux) {
-	baseURL := fmt.Sprintf("/datacenters/%s/volumes/%s", TestProviderSpecDatacenterID, TestServerVolumeID)
+	baseURL := fmt.Sprintf("%s/datacenters/%s/volumes/%s", apiBasePath, TestProviderSpecDatacenterID, TestServerVolumeID)
 
 	mux.HandleFunc(baseURL, func(res http.ResponseWriter, req *http.Request) {
 		res.Header().Add("Content-Type", "application/json; charset=utf-8")
@@ -467,7 +467,7 @@ func SetupTestVolumeEndpointOnMux(mux *http.ServeMux) {
 // PARAMETERS
 // mux *http.ServeMux Mux to add handler to
 func SetupVolumesEndpointOnMux(mux *http.ServeMux) {
-	mux.HandleFunc(fmt.Sprintf("/datacenters/%s/volumes", TestProviderSpecDatacenterID), func(res http.ResponseWriter, req *http.Request) {
+	mux.HandleFunc(fmt.Sprintf("%s/datacenters/%s/volumes", apiBasePath, TestProviderSpecDatacenterID), func(res http.ResponseWriter, req *http.Request) {
 		res.Header().Add("Content-Type", "application/json; charset=utf-8")
 
 		if (strings.ToLower(req.Method) == "post") {
