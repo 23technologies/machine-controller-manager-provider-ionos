@@ -21,7 +21,7 @@ import (
 	"fmt"
 
 	"github.com/23technologies/machine-controller-manager-provider-ionos/pkg/ionos/apis/mock"
-	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
 

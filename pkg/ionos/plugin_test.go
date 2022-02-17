@@ -20,7 +20,7 @@ package ionos
 import (
 	"github.com/23technologies/machine-controller-manager-provider-ionos/pkg/spi"
 	"github.com/gardener/machine-controller-manager/pkg/util/provider/driver"
-	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
 

@@ -7,7 +7,7 @@ require (
 	github.com/gardener/machine-controller-manager v0.43.0
 	github.com/google/uuid v1.2.0
 	github.com/ionos-cloud/sdk-go/v6 v6.0.1
-	github.com/onsi/ginkgo v1.16.5
+	github.com/onsi/ginkgo/v2 v2.1.3
 	github.com/onsi/gomega v1.17.0
 	github.com/spf13/pflag v1.0.5
 	k8s.io/api v0.20.6

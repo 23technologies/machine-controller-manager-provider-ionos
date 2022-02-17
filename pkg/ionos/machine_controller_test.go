@@ -26,16 +26,22 @@ import (
 	"github.com/gardener/machine-controller-manager/pkg/util/provider/driver"
 	"github.com/gardener/machine-controller-manager/pkg/util/provider/machinecodes/codes"
 	"github.com/gardener/machine-controller-manager/pkg/util/provider/machinecodes/status"
-	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/ginkgo/extensions/table"
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 )
+var provider *MachineProvider
+
+var _ = BeforeSuite(func() {
+	provider = &MachineProvider {
+		SPI: &spi.PluginSPIImpl{},
+	}
+})
 
 var _ = Describe("MachineController", func() {
 	var mockTestEnv mock.MockTestEnv
-	var provider *MachineProvider
+
 	providerSecret := &corev1.Secret{
 		Data: map[string][]byte{
 			"user":     []byte("dummy-user"),
@@ -43,12 +49,6 @@ var _ = Describe("MachineController", func() {
 			"userData": []byte("dummy-user-data"),
 		},
 	}
-
-	var _ = BeforeSuite(func() {
-		provider = &MachineProvider {
-			SPI: &spi.PluginSPIImpl{},
-		}
-	})
 
 	var _ = BeforeEach(func() {
 		mockTestEnv = mock.NewMockTestEnv()
