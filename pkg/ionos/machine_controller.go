@@ -31,7 +31,7 @@ import (
 	"github.com/gardener/machine-controller-manager/pkg/util/provider/machinecodes/codes"
 	"github.com/gardener/machine-controller-manager/pkg/util/provider/machinecodes/status"
 	ionossdk "github.com/ionos-cloud/sdk-go/v6"
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 )
 
 // Constant ionosVolumeType is the volume type
