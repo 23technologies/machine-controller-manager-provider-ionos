@@ -60,15 +60,15 @@ if [[ "${SOURCE_PATH}" != *"src/github.com/23technologies/machine-controller-man
 
   cd "${SOURCE_SYMLINK_PATH}"
 
-  export GOPATH="${SOURCE_PATH}/tmp"
-  export GOBIN="${SOURCE_PATH}/tmp/bin"
+  export GOPATH="${SOURCE_PATH}/tmp/"
+  export GOBIN="${SOURCE_PATH}/tmp/bin/"
   export PATH="${GOBIN}:${PATH}"
 fi
 
 if [[ ! -d "${GOPATH}/pkg/mod/github.com/onsi/ginkgo" ]]; then
   # Install Ginkgo (test framework) to be able to execute the tests.
   echo "Fetching Ginkgo frawework"
-  GO111MODULE=on go get github.com/onsi/ginkgo/v2/ginkgo
+  go install -mod=readonly github.com/onsi/ginkgo/v2/ginkgo@latest
   echo "Successfully fetched Ginkgo frawework"
 fi
 
