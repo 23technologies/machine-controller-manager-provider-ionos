@@ -26,6 +26,7 @@ import (
 	"github.com/spf13/pflag"
 	"k8s.io/component-base/cli/flag"
 	"k8s.io/component-base/logs"
+	"k8s.io/component-base/version/verflag"
 )
 
 // RunProviderIonosManager runs the IONOS machine controller server.
@@ -34,9 +35,12 @@ import (
 // args *pflag.FlagSet Command line arguments
 func RunProviderIonosManager(args *pflag.FlagSet) error {
 	s := options.NewMCServer()
-	s.AddFlags(args)
 
+	s.AddFlags(args)
 	flag.InitFlags()
+
+	verflag.PrintAndExitIfRequested()
+
 	logs.InitLogs()
 	defer logs.FlushLogs()
 
