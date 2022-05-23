@@ -18,6 +18,7 @@ limitations under the License.
 package ionos
 
 import (
+	"bytes"
 	"context"
 	"encoding/base64"
 	"encoding/hex"
@@ -84,6 +85,15 @@ func (p *MachineProvider) createMachine(ctx context.Context, req *driver.CreateM
 	if !ok {
 		return nil, status.Error(codes.Internal, "userData doesn't exist")
 	}
+
+	// @TODO: IONOS is currently unable to set-up hostnames. We need to hack around it for now.
+	if bytes.HasPrefix(userData, []byte("#cloud-config\n")) {
+		return nil, status.Error(codes.InvalidArgument, "userData #cloud-config which is not supported")
+	}
+
+	userDataBuffer := bytes.NewBuffer(userData)
+	userDataBuffer.WriteString(fmt.Sprintf("\n\necho '%s' > /etc/hostname", machine.Name))
+	userData = userDataBuffer.Bytes()
 
 	client := ionosapiwrapper.GetClientForUser(string(secret.Data["user"]), string(secret.Data["password"]))
 
