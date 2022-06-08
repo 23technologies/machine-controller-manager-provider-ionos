@@ -48,8 +48,34 @@ type KubernetesNodePoolProperties struct {
 	PublicIps *[]string `json:"publicIps,omitempty"`
 	// List of available versions for upgrading the node pool.
 	AvailableUpgradeVersions *[]string `json:"availableUpgradeVersions,omitempty"`
-	// Public IP address for the gateway performing source NAT for the node pool's nodes belonging to a private cluster. Required only if the node pool belongs to a private cluster.
-	GatewayIp *string `json:"gatewayIp,omitempty"`
+}
+
+// NewKubernetesNodePoolProperties instantiates a new KubernetesNodePoolProperties object
+// This constructor will assign default values to properties that have it defined,
+// and makes sure properties required by API are set, but the set of arguments
+// will change when the set of required properties is changed
+func NewKubernetesNodePoolProperties(name string, datacenterId string, nodeCount int32, cpuFamily string, coresCount int32, ramSize int32, availabilityZone string, storageType string, storageSize int32) *KubernetesNodePoolProperties {
+	this := KubernetesNodePoolProperties{}
+
+	this.Name = &name
+	this.DatacenterId = &datacenterId
+	this.NodeCount = &nodeCount
+	this.CpuFamily = &cpuFamily
+	this.CoresCount = &coresCount
+	this.RamSize = &ramSize
+	this.AvailabilityZone = &availabilityZone
+	this.StorageType = &storageType
+	this.StorageSize = &storageSize
+
+	return &this
+}
+
+// NewKubernetesNodePoolPropertiesWithDefaults instantiates a new KubernetesNodePoolProperties object
+// This constructor will only assign default values to properties that have it defined,
+// but it doesn't guarantee that properties required by API are set
+func NewKubernetesNodePoolPropertiesWithDefaults() *KubernetesNodePoolProperties {
+	this := KubernetesNodePoolProperties{}
+	return &this
 }
 
 // GetName returns the Name field value
@@ -698,44 +724,6 @@ func (o *KubernetesNodePoolProperties) HasAvailableUpgradeVersions() bool {
 	return false
 }
 
-// GetGatewayIp returns the GatewayIp field value
-// If the value is explicit nil, the zero value for string will be returned
-func (o *KubernetesNodePoolProperties) GetGatewayIp() *string {
-	if o == nil {
-		return nil
-	}
-
-	return o.GatewayIp
-
-}
-
-// GetGatewayIpOk returns a tuple with the GatewayIp field value
-// and a boolean to check if the value has been set.
-// NOTE: If the value is an explicit nil, `nil, true` will be returned
-func (o *KubernetesNodePoolProperties) GetGatewayIpOk() (*string, bool) {
-	if o == nil {
-		return nil, false
-	}
-
-	return o.GatewayIp, true
-}
-
-// SetGatewayIp sets field value
-func (o *KubernetesNodePoolProperties) SetGatewayIp(v string) {
-
-	o.GatewayIp = &v
-
-}
-
-// HasGatewayIp returns a boolean if a field has been set.
-func (o *KubernetesNodePoolProperties) HasGatewayIp() bool {
-	if o != nil && o.GatewayIp != nil {
-		return true
-	}
-
-	return false
-}
-
 func (o KubernetesNodePoolProperties) MarshalJSON() ([]byte, error) {
 	toSerialize := map[string]interface{}{}
 	if o.Name != nil {
@@ -788,9 +776,6 @@ func (o KubernetesNodePoolProperties) MarshalJSON() ([]byte, error) {
 	}
 	if o.AvailableUpgradeVersions != nil {
 		toSerialize["availableUpgradeVersions"] = o.AvailableUpgradeVersions
-	}
-	if o.GatewayIp != nil {
-		toSerialize["gatewayIp"] = o.GatewayIp
 	}
 	return json.Marshal(toSerialize)
 }

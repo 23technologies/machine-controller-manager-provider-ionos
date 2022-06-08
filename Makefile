@@ -50,8 +50,8 @@ start:
 
 .PHONY: revendor
 revendor:
-	@env GO111MODULE=on go mod vendor
-	@env GO111MODULE=on go mod tidy
+	@GO111MODULE=on go mod tidy -compat=1.17
+	@GO111MODULE=on go mod vendor
 
 #########################################
 # Rules for testing
